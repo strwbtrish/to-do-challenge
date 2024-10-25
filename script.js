@@ -1,7 +1,7 @@
 'use script';
 
 class ToDoApp {
-    #taskId;
+    taskId;
     tasks;
 
     constructor() {
@@ -35,7 +35,7 @@ class ToDoApp {
         this.allTask();
         this.activeTask();
         this.completeTask();
-        this.#taskId = ''; //temporary
+        this.taskId = ''; //temporary
     }
 
     init() {
@@ -56,12 +56,12 @@ class ToDoApp {
 
     addTask() {
         //set id
-        this.#taskId++;
-        this.#taskId = `${this.#taskId}`.padStart(6, '0');
-        console.log(this.#taskId);
+        this.taskId++;
+        this.taskId = `${this.taskId}`.padStart(6, '0');
+        console.log(this.taskId);
 
         const addTask = {
-            taskId: this.#taskId,
+            taskId: this.taskId,
             message: this.input.value,
             activeTask: true
         }
@@ -122,7 +122,7 @@ class ToDoApp {
         }
 
         window.addEventListener('hashchange', checkHashAndRender);
-        document.addEventListener("DOMContentLoaded", checkHashAndRender);
+        document.addEventListener("DOMContentLoaded", this.renderAllTasks.bind(this));
            
     }
 
@@ -143,17 +143,17 @@ class ToDoApp {
 
     }
 
-    // deleteTask() {
-    //     this.detailBox.addEventListener('click', function(e) {
-    //         const parentTask = e.target.closest('.radio-li');
+    deleteTask() {
+        this.detailBox.addEventListener('click', function(e) {
+            const parentTask = e.target.closest('.radio-li');
          
-    //         if (!e.target.classList.contains('delete-task')) return
+            if (!e.target.classList.contains('delete-task')) return
                
-            
+            parentTask.remove();
            
 
-    //     }.bind(this))
-    // }
+        }.bind(this))
+    }
 
     clearInput() {
         this.input.value = '';
