@@ -147,10 +147,13 @@ body {
            
            
             li {
+                display: flex;
+                justify-content: space-between;
                 padding: 1.5rem;
                 border-bottom: 1px solid var(--text-color-2);
                 font-size: 2rem;
-               
+                
+                
                 
 
                 &:last-child {
@@ -160,6 +163,10 @@ body {
                 .radio-button-label {
                     display: flex;
                     gap: 1rem;
+                }
+
+                .delete-task {
+                    cursor: pointer;
                 }
 
                 input[type="radio"] {

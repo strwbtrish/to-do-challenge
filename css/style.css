@@ -119,6 +119,8 @@ body {
   list-style: none;
 }
 .project-box-details-box .ul-list li {
+  display: flex;
+  justify-content: space-between;
   padding: 1.5rem;
   border-bottom: 1px solid var(--text-color-2);
   font-size: 2rem;
@@ -129,6 +131,9 @@ body {
 .project-box-details-box .ul-list li .radio-button-label {
   display: flex;
   gap: 1rem;
+}
+.project-box-details-box .ul-list li .delete-task {
+  cursor: pointer;
 }
 .project-box-details-box .ul-list li input[type=radio] {
   width: 20px;

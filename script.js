@@ -1,16 +1,41 @@
 'use script';
 
 class ToDoApp {
- 
+    #taskId;
+    tasks;
+
     constructor() {
         this.input = document.querySelector('.todo-input');
         this.switchTheme = document.querySelector('.switch-theme');
         this.body = document.querySelector('body');
         this.detailBox = document.querySelector('.project-box-details-box');
         this.taskLists = this.detailBox.querySelector('.ul-list');
-        this.taskId = '';
+        this.allTasks = document.querySelectorAll('.radio-li');
+        this.specificTask = document.querySelector('.radio-li');
+        this.activeLink = document.querySelector('.active-link');
+
+        //for testing
+        this.tasks = [{
+            taskId: '33333',
+            message: 'Prepare Breakfast',
+            activeTask: true,
+        }, {
+            taskId: '332',
+            message: 'Wash dishes',
+            activeTask: true,
+        }, {
+            taskId: '333332',
+            message: 'Play video games',
+            activeTask: false,
+        }];
+
         this.init();
         this.toggletheme();
+        this.deleteTask();
+        this.allTask();
+        this.activeTask();
+        this.completeTask();
+        this.#taskId = ''; //temporary
     }
 
     init() {
@@ -18,11 +43,11 @@ class ToDoApp {
             if (e.key === 'Enter') {
                 if (this.input.value.trim() === '') {
                     console.error('Empty input!!!');
-                    this.clear();
+                    this.clearInput();
 
                 } else {
                     this.addTask();
-                    this.clear();
+                    this.clearInput();
                 }
             }
         }.bind(this));
@@ -31,28 +56,113 @@ class ToDoApp {
 
     addTask() {
         //set id
-        this.taskId++;
-        this.taskId = `${this.taskId}`.padStart(6, '0');
+        this.#taskId++;
+        this.#taskId = `${this.#taskId}`.padStart(6, '0');
+        console.log(this.#taskId);
 
-        console.log('Task Id:' , this.taskId);
-        console.log('To do list:' , this.input.value);
+        const addTask = {
+            taskId: this.#taskId,
+            message: this.input.value,
+            activeTask: true
+        }
 
-        const addList = `<li class="radio-li" data-id = '${this.taskId}'><label for="${this.taskId}" class="radio-button-label">
-                <input type="radio" value="${this.taskId}" id="${this.taskId}">${this.input.value}</label></li>`
+        this.tasks.push(addTask);
 
+        this.renderAllTasks();
         
-        this.taskLists.insertAdjacentHTML('beforeend', addList); }
 
+        }
+
+
+    generateMarkUp(task) {
+        return `<li class="radio-li" data-id = '${task.taskId}'><label for="${task.taskId}" class="radio-button-label">
+        <input type="radio" value="${task.taskId}" id="${task.taskId}">${task.message}</label>
+        <img src="images/icon-cross.svg" class="delete-task" data-id= "${task.taskId}"></li>`
+    }
+
+    renderAllTasks() {
+        this.clearTasks();
+
+        const allTasks = this.tasks.map(this.generateMarkUp.bind(this)).join('');
+        this.taskLists.insertAdjacentHTML('beforeend', allTasks);
+
+    }
+    
+    //for active task and completed task
+    renderFilteredTasks(taskStatus) {
+        this.clearTasks();
+
+        const renderTasks = this.tasks
+        .filter(task => taskStatus === 'active' ? task.activeTask : !task.activeTask)
+        .map(this.generateMarkUp.bind(this)).join('');
+          
+        this.taskLists.insertAdjacentHTML('beforeend', renderTasks);
+    }
+
+    
+    allTask() {
+
+        const checkHashAndRender = () => {
+            const currentHash = window.location.hash.slice(1).trim();
+            if(currentHash !== 'alltasks') return;
+
+            this.renderAllTasks();
+        }
+
+        window.addEventListener('hashchange', checkHashAndRender);
+        document.addEventListener('DOMContentLoaded', checkHashAndRender);
+    }
+
+    activeTask() {
+        const checkHashAndRender = () => {
+            const currentHash = window.location.hash.slice(1).trim();
+            if(currentHash !== "active") return; 
+
+            this.renderFilteredTasks('active');
+        }
+
+        window.addEventListener('hashchange', checkHashAndRender);
+        document.addEventListener("DOMContentLoaded", checkHashAndRender);
+           
+    }
+
+    completeTask() {
+        const checkHashAndRender = () => {
+            const currentHash = window.location.hash.slice(1).trim();
+            if(currentHash !== 'completedtasks') return;
+
+            this.renderFilteredTasks('complete');
+        }
+
+        window.addEventListener('hashchange', checkHashAndRender);
+        window.addEventListener("DOMContentLoaded", checkHashAndRender);
+    }
+
+ 
     editTask() {
 
     }
 
-    deleteTask() {
-        
+    // deleteTask() {
+    //     this.detailBox.addEventListener('click', function(e) {
+    //         const parentTask = e.target.closest('.radio-li');
+         
+    //         if (!e.target.classList.contains('delete-task')) return
+               
+            
+           
+
+    //     }.bind(this))
+    // }
+
+    clearInput() {
+        this.input.value = '';
     }
 
-    clear() {
-        this.input.value = '';
+    clearTasks() {
+        // this.tasks.forEach(task => task.remove());
+       this.taskLists.textContent = '';
+       
     }
 
 
