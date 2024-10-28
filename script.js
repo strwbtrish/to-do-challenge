@@ -146,18 +146,12 @@ class ToDoApp {
         document.addEventListener('DOMContentLoaded', this.checkHashAndRender.bind(this));
     }
    
-    resetLinks() {
-        this.links.forEach(link => link.classList.remove('ACTIVE'));
-    }
 
     deleteTask() {
         this.detailBox.addEventListener('click', function(e) {
-            const parentTask = e.target.closest('.radio-li');
          
             if (!e.target.classList.contains('delete-task')) return
             const selectedTaskID = e.target.dataset.id;
-            
-            
             const findID = this.tasks.findIndex(task => task.taskId === selectedTaskID);
 
             if (findID === -1) return;
@@ -165,8 +159,7 @@ class ToDoApp {
             this.tasks.splice(findID, 1);
 
 
-            if (this.currentHash === 'completedtasks') this.checkHashAndRender(this.completedTaskLink);
-            if (this.currentHash === 'active') this.checkHashAndRender(this.activeTaskLink);
+            this.checkHashAndRender();
         
 
         }.bind(this))
