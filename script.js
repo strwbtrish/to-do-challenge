@@ -9,33 +9,41 @@ class ToDoApp {
         this.switchTheme = document.querySelector('.switch-theme');
         this.body = document.querySelector('body');
         this.detailBox = document.querySelector('.project-box-details-box');
+        this.linkBox = document.querySelector('.project-box-links-box');
+        this.links = document.querySelectorAll('.a-link');
         this.taskLists = this.detailBox.querySelector('.ul-list');
         this.allTasks = document.querySelectorAll('.radio-li');
         this.specificTask = document.querySelector('.radio-li');
         this.activeLink = document.querySelector('.active-link');
+        //links
+        this.allTaskLink = document.querySelector('.all-link');
+        this.activeTaskLink = document.querySelector('.active-link');
+        this.completedTaskLink = document.querySelector('.completed-link');
 
         //for testing
-        this.tasks = [{
-            taskId: '33333',
-            message: 'Prepare Breakfast',
-            activeTask: true,
-        }, {
-            taskId: '332',
-            message: 'Wash dishes',
-            activeTask: true,
-        }, {
-            taskId: '333332',
-            message: 'Play video games',
-            activeTask: false,
-        }];
+        // this.tasks = [{
+        //     taskId: '33333',
+        //     message: 'Prepare Breakfast',
+        //     activeTask: true,
+        // }, {
+        //     taskId: '332',
+        //     message: 'Wash dishes',
+        //     activeTask: true,
+        // }, {
+        //     taskId: '333332',
+        //     message: 'Play video games',
+        //     activeTask: false,
+        // }];
+
+        this.tasks = [];
 
         this.init();
         this.toggletheme();
         this.deleteTask();
-        this.allTask();
-        this.activeTask();
-        this.completeTask();
+        this.registerEventListener();
         this.taskId = ''; //temporary
+        this.todoList;
+        // this.currentHash = window.location.hash.slice(1);
     }
 
     init() {
@@ -54,6 +62,18 @@ class ToDoApp {
     
     }
 
+    get currentHash() {
+        return window.location.hash.slice(1).trim();
+    }
+
+    get todoList() {
+        if(this.tasks.length === 0) {
+            return 'Theres no to do list yet!';
+        }
+
+        return this.tasks;
+    }
+
     addTask() {
         //set id
         this.taskId++;
@@ -68,9 +88,7 @@ class ToDoApp {
 
         this.tasks.push(addTask);
 
-        this.renderAllTasks();
-        
-
+        this.checkHashAndRender();
         }
 
 
@@ -80,67 +98,56 @@ class ToDoApp {
         <img src="images/icon-cross.svg" class="delete-task" data-id= "${task.taskId}"></li>`
     }
 
-    renderAllTasks() {
-        this.clearTasks();
-
-        const allTasks = this.tasks.map(this.generateMarkUp.bind(this)).join('');
-        this.taskLists.insertAdjacentHTML('beforeend', allTasks);
-
-    }
-    
     //for active task and completed task
-    renderFilteredTasks(taskStatus) {
+    renderTasks() {
         this.clearTasks();
+        let renderTasks;
+        const typeOfTask = this.currentHash.replace('tasks', ' tasks'); //put space
 
-        const renderTasks = this.tasks
-        .filter(task => taskStatus === 'active' ? task.activeTask : !task.activeTask)
-        .map(this.generateMarkUp.bind(this)).join('');
-          
+        if (typeOfTask === 'all tasks' || !typeOfTask) {
+
+         renderTasks = this.tasks.map(this.generateMarkUp.bind(this)).join(''); 
+         
+         if (renderTasks === '') renderTasks = '<li class="no-tasks-message">No tasks at the moment </li>';
+
+        }
+         
+        else {
+         renderTasks = this.tasks
+        .filter(task => this.currentHash === 'activetasks' ? task.activeTask : !task.activeTask)
+        .map(this.generateMarkUp.bind(this)).join(''); 
+        
+        if (renderTasks === '') renderTasks = `<li class="no-tasks-message">No ${typeOfTask} at the moment </li>`;
+    
+    }
+
         this.taskLists.insertAdjacentHTML('beforeend', renderTasks);
     }
 
-    
-    allTask() {
-
-        const checkHashAndRender = () => {
-            const currentHash = window.location.hash.slice(1).trim();
-            if(currentHash !== 'alltasks') return;
-
-            this.renderAllTasks();
+    checkHashAndRender() {
+        const allLinks = {
+            completedtasks: this.completedTaskLink,
+            activetasks: this.activeTaskLink,
+            alltasks: this.allTaskLink
         }
 
-        window.addEventListener('hashchange', checkHashAndRender);
-        document.addEventListener('DOMContentLoaded', checkHashAndRender);
+        this.renderTasks();
+      
+        //Reset links
+        Object.values(allLinks).forEach(link => link.classList.remove('ACTIVE'));
+
+        //Add 1 active link according to the current hash
+        (allLinks[this.currentHash] || allLinks.alltasks).classList.add('ACTIVE');
     }
 
-    activeTask() {
-        const checkHashAndRender = () => {
-            const currentHash = window.location.hash.slice(1).trim();
-            if(currentHash !== "active") return; 
-
-            this.renderFilteredTasks('active');
-        }
-
-        window.addEventListener('hashchange', checkHashAndRender);
-        document.addEventListener("DOMContentLoaded", this.renderAllTasks.bind(this));
-           
+    registerEventListener() {
+        //ALL, ACTIVE, COMPLETED
+        window.addEventListener('hashchange', this.checkHashAndRender.bind(this));
+        document.addEventListener('DOMContentLoaded', this.checkHashAndRender.bind(this));
     }
-
-    completeTask() {
-        const checkHashAndRender = () => {
-            const currentHash = window.location.hash.slice(1).trim();
-            if(currentHash !== 'completedtasks') return;
-
-            this.renderFilteredTasks('complete');
-        }
-
-        window.addEventListener('hashchange', checkHashAndRender);
-        window.addEventListener("DOMContentLoaded", checkHashAndRender);
-    }
-
- 
-    editTask() {
-
+   
+    resetLinks() {
+        this.links.forEach(link => link.classList.remove('ACTIVE'));
     }
 
     deleteTask() {
@@ -148,9 +155,19 @@ class ToDoApp {
             const parentTask = e.target.closest('.radio-li');
          
             if (!e.target.classList.contains('delete-task')) return
-               
-            parentTask.remove();
-           
+            const selectedTaskID = e.target.dataset.id;
+            
+            
+            const findID = this.tasks.findIndex(task => task.taskId === selectedTaskID);
+
+            if (findID === -1) return;
+
+            this.tasks.splice(findID, 1);
+
+
+            if (this.currentHash === 'completedtasks') this.checkHashAndRender(this.completedTaskLink);
+            if (this.currentHash === 'active') this.checkHashAndRender(this.activeTaskLink);
+        
 
         }.bind(this))
     }
@@ -160,9 +177,7 @@ class ToDoApp {
     }
 
     clearTasks() {
-        // this.tasks.forEach(task => task.remove());
        this.taskLists.textContent = '';
-       
     }
 
 
