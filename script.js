@@ -22,30 +22,24 @@ class ToDoApp {
         this.clearCompleted = document.querySelector('.clear-complete');
       
 
-        //for testing
-        this.tasks = [{
-            taskId: '000001',
-            message: 'Prepare Breakfast',
-            activeTask: false,
-        }, {
-            taskId: '000002',
-            message: 'Wash dishes',
-            activeTask: true,
-        }, {
-            taskId: '000003',
-            message: 'Play video games',
-            activeTask: false,
-        }];
+        // for testing
+        // this.tasks = [{
+        //     taskId: '000001',
+        //     message: 'Prepare Breakfast',
+        //     activeTask: false,
+        // }, {
+        //     taskId: '000002',
+        //     message: 'Wash dishes',
+        //     activeTask: true,
+        // }, {
+        //     taskId: '000003',
+        //     message: 'Play video games',
+        //     activeTask: false,
+        // }];
 
-        // this.tasks = [];
-
-        this.init();
-        this.toggletheme();
-        this.deleteTask();
-        this.registerEventListener();
-        this.modifyTaskStatus();
-        this.clearCompletedTasks();
+        this.tasks = [];
         this.taskId = ''; //temporary
+        this.init();
         
     }
 
@@ -62,7 +56,13 @@ class ToDoApp {
                 }
             }
         }.bind(this));
-    
+
+        this.toggletheme();
+        this.deleteTask();
+        this.registerEventListener();
+        this.modifyTaskStatus();
+        this.clearCompletedTasks();
+
     }
 
     get currentHash() {
@@ -71,18 +71,19 @@ class ToDoApp {
 
     addTask() {
         //set id
-        this.taskId++;
-        this.taskId = `${this.taskId}`.padStart(6, '0');
-        console.log(this.taskId);
+        const lastEnteredTask = this.tasks.at(-1);
 
+        this.taskId = lastEnteredTask ? `${+lastEnteredTask.taskId + 1}`.padStart(6, '0') : 1;
+
+        this.taskId = `${this.taskId}`.padStart(6, '0');
+    
         const addTask = {
             taskId: this.taskId,
             message: this.input.value,
-            activeTask: true
+            activeTask: 1
         }
 
         this.tasks.push(addTask);
-
         this.checkHashAndRender();
         }
 
@@ -91,21 +92,25 @@ class ToDoApp {
         const addCheck = !task.activeTask ? 'CHECKED' : '';
         const slashCompletedTask = !task.activeTask ? 'text-decoration: line-through;' : '';
 
-        return `<li class="radio-li" data-id = '${task.taskId}'>
+        return `<li class="radio-li"  data-id = '${task.taskId}'>
         <label for="${task.taskId}" class="radio-button-label" style="${slashCompletedTask}"}>
-        <input type="radio" class="radio-btn" data-id="${task.taskId}" } ${addCheck}>${task.message}
+        <input type="radio" class="radio-btn" id="${task.taskId}" } ${addCheck}>${task.message}
         </label>
         <img src="images/icon-cross.svg" class="delete-task" data-id= "${task.taskId}">
         </li>`
     }
 
-    //for active task and completed task
+    drop(e) {
+        e.preventDefault();
+    }
+
+    
     renderTasks() {
         let renderTasks;
         const typeOfTask = this.currentHash.replace('tasks', ' tasks'); //put space
         this.clearTasks();
 
-        const noOfTasksLeft = this.tasks.reduce((acc, i) =>  acc += (i.activeTask ? 1 : 0), 0);
+        const noOfTasksLeft = this.tasks.reduce((acc, i) =>  acc += i.activeTask, 0);
 
         this.noOfTasks.textContent = `${noOfTasksLeft} items left`;
 
@@ -162,10 +167,7 @@ class ToDoApp {
             const findID = this.tasks.findIndex(task => task.taskId === selectedTaskID);
 
             if (findID === -1) return;
-
             this.tasks.splice(findID, 1);
-
-
             this.checkHashAndRender();
         
 
@@ -189,21 +191,23 @@ class ToDoApp {
             const clicked = e.target;
             if (!clicked.classList.contains('radio-btn')) return;
             
-            const selectedTaskID = clicked.dataset.id;
+            const selectedTaskID = clicked.id;
             const id = this.findID(selectedTaskID);
-            const radioBtn = document.querySelector(`input[type="radio"][data-id = "${this.tasks[id].taskId}"]`);
+            const radioBtn = document.querySelector(`input[type="radio"][id = "${this.tasks[id].taskId}"]`);
            
             //Change task status
             if(this.tasks[id].activeTask) {
 
-                this.tasks[id].activeTask = false;
+                this.tasks[id].activeTask = 0;
             } else  {
 
-                this.tasks[id].activeTask = true;
-                radioBtn.checked = false;
+                this.tasks[id].activeTask = 1;
+                radioBtn.checked = 0;
             }
 
             this.checkHashAndRender();
+
+    
             
         }.bind(this))
         
